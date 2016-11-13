@@ -107,7 +107,7 @@ sub register_worker_by_name {
 
     croak('name must be defined') unless defined $name;
 
-    my $worker = $self->{worker_per_storekeeper}->{$name};
+    my $worker = $self->{worker_per_definition}->{$name};
 
     die "unknown worker\n" unless defined $worker;
 
