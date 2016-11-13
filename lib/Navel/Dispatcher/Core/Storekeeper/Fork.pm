@@ -5,7 +5,7 @@
 
 #-> initialization
 
-package Navel::Scheduler::Core::Storekeeper::Fork 0.1;
+package Navel::Dispatcher::Core::Storekeeper::Fork 0.1;
 
 use Navel::Base;
 
