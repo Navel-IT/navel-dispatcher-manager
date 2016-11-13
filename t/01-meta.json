@@ -1,0 +1,6 @@
+{
+    "storekeepers": {
+        "definitions_from_file": "t/01-storekeepers.json",
+        "maximum": 0
+    }
+}

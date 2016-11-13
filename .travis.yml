@@ -1,0 +1,36 @@
+---
+language: perl
+perl:
+  - '5.24'
+  - '5.22'
+  - '5.20'
+sudo: required
+before_install:
+  - |
+      f_install_navel_dep() {
+          git clone "https://github.com/navel-it/${1}" && \
+          pushd "${1}" && \
+          cpanm --quiet --installdeps --notest . && \
+          cpanm --quiet . && \
+          popd
+      }
+  - pushd ..
+  - f_install_navel_dep navel-base
+  - f_install_navel_dep navel-base-definition
+  - f_install_navel_dep navel-queue
+  - f_install_navel_dep navel-logger
+  - f_install_navel_dep navel-api
+  - f_install_navel_dep navel-base-daemon
+  - f_install_navel_dep navel-base-workermanager
+  - f_install_navel_dep navel-mojolicious-plugin-logger
+  - f_install_navel_dep navel-mojolicious-plugin-swagger2-stdresponses
+  - f_install_navel_dep navel-anyevent-fork-rpc-serializer-sereal
+  - f_install_navel_dep navel-anyevent-pool
+  - f_install_navel_dep navel-definition-storekeeper
+  - f_install_navel_dep navel-event
+  - popd
+  - cpanm --quiet --notest Devel::Cover::Report::Coveralls
+after_success:
+  - cover -test -report coveralls
+notifications:
+  email: false
