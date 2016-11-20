@@ -30,15 +30,22 @@ use Navel::Queue;
 
 BEGIN {
     require ' . $self->{definition}->{consumer_backend} . ';
+    require ' . $self->{definition}->{publisher_backend} . ';
 }
 
 my ($initialized, $exiting);
 
 *log = \&AnyEvent::Fork::RPC::event;
 
-sub queue {
+sub consumer_queue {
     state $queue = Navel::Queue->new(
-        size => ' . $self->{definition}->{queue_size} . '
+        size => ' . $self->{definition}->{consumer_queue_size} . '
+    );
+}
+
+sub publisher_queue {
+    state $queue = Navel::Queue->new(
+        size => ' . $self->{definition}->{publisher_queue_size} . '
     );
 }
 
@@ -52,10 +59,14 @@ sub ' . $self->{worker_rpc_method} . ' {
     }
 
     unless (defined $backend) {
-        if ($sub eq ' . "'queue'" . ') {
-            $done->(1, scalar @{queue->{items}});
-        } elsif ($sub eq ' . "'dequeue'" . ') {
-            $done->(1, scalar queue->dequeue);
+        if ($sub eq ' . "'consumer_queue'" . ') {
+            $done->(1, scalar @{consumer_queue->{items}});
+        } elsif ($sub eq ' . "'consumer_dequeue'" . ') {
+            $done->(1, scalar consumer_queue->dequeue);
+        } elsif ($sub eq ' . "'publisher_queue'" . ') {
+            $done->(1, scalar @{publisher_queue->{items}});
+        } elsif ($sub eq ' . "'publisher_dequeue'" . ') {
+            $done->(1, scalar publisher_queue->dequeue);
         } else {
             $exiting = 1;
 
@@ -79,6 +90,7 @@ sub ' . $self->{worker_rpc_method} . ' {
         };
 
         ' . $self->{definition}->{consumer_backend} . '::init;
+        ' . $self->{definition}->{publisher_backend} . '::init;
     }
 
     if (my $sub_ref = $backend->can($sub)) {

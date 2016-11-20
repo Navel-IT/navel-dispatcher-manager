@@ -11,7 +11,10 @@ use Navel::Base;
 
 use parent 'Navel::Base::WorkerManager::Core';
 
-use Promises 'collect';
+use Promises qw/
+    deferred
+    collect
+/;
 
 use Navel::Logger::Message;
 use Navel::Definition::Storekeeper::Parser;
@@ -102,6 +105,61 @@ sub init_worker_by_name {
     $self;
 }
 
+my $worker_timer_callback_common_workflow = sub {
+    my ($self, $worker, $timer, $interface_type) = @_;
+
+    my $interface_backend = $interface_type . '_backend';
+
+    my $deferred = deferred;
+
+    $worker->rpc(
+        $worker->{definition}->{$interface_backend},
+        'is_connectable'
+    )->then(
+        sub {
+            if (shift) {
+                $self->{logger}->debug($worker->{definition}->full_name . ': ' . $timer->full_name . ': the associated ' . $interface_type . ' is apparently connectable.');
+
+                collect(
+                    $worker->rpc($worker->{definition}->{$interface_backend}, 'is_connected'),
+                    $worker->rpc($worker->{definition}->{$interface_backend}, 'is_connecting')
+                );
+            } else {
+                (
+                    [
+                        1
+                    ],
+                    [
+                        0
+                    ]
+                );
+            }
+        }
+    )->then(
+        sub {
+            unless (shift->[0]) {
+                if (shift->[0]) {
+                    $deferred->reject('connecting of the associated ' . $interface_type . ' is in progress, cannot continue');
+                } else {
+                    $self->{logger}->debug($worker->{definition}->full_name . ': ' . $timer->full_name . ': starting connection of the associated ' . $interface_type . '.');
+
+                    $worker->rpc($worker->{definition}->{$interface_backend}, 'connect');
+                }
+            }
+        }
+    )->then(
+        sub {
+            $deferred->resolve;
+        }
+    )->catch(
+        sub {
+            $deferred->reject(@_);
+        }
+    );
+
+    $deferred->promise;
+};
+
 sub register_worker_by_name {
     my ($self, $name) = @_;
 
@@ -125,41 +183,9 @@ sub register_worker_by_name {
         callback => sub {
             my $timer = shift->begin;
 
-            $worker->rpc(
-                $worker->{definition}->{consumer_backend},
-                'is_connectable'
-            )->then(
-                sub {
-                    if (shift) {
-                        $self->{logger}->debug($worker->{definition}->full_name . ': ' . $timer->full_name . ': the associated consumer is apparently connectable.');
-
-                        collect(
-                            $worker->rpc($worker->{definition}->{consumer_backend}, 'is_connected'),
-                            $worker->rpc($worker->{definition}->{consumer_backend}, 'is_connecting')
-                        );
-                    } else {
-                        (
-                            [
-                                1
-                            ],
-                            [
-                                0
-                            ]
-                        );
-                    }
-                }
-            )->then(
-                sub {
-                    unless (shift->[0]) {
-                        if (shift->[0]) {
-                            die "connecting is in progress, cannot continue\n";
-                        } else {
-                            $self->{logger}->debug($worker->{definition}->full_name . ': ' . $timer->full_name . ': starting connection.');
-
-                            $worker->rpc($worker->{definition}->{consumer_backend}, 'connect');
-                        }
-                    }
-                }
+            collect(
+                $worker_timer_callback_common_workflow->($self, $worker, $timer, 'consumer'),
+                $worker_timer_callback_common_workflow->($self, $worker, $timer, 'publisher')
             )->then(
                 sub {
                     $self->{logger}->notice($worker->{definition}->full_name . ': ' . $timer->full_name . ': chain of action successfully completed.');
@@ -175,7 +201,8 @@ sub register_worker_by_name {
 
             collect(
                 $worker->rpc($worker->{definition}->{backend}, 'enable'),
-                $worker->rpc($worker->{definition}->{consumer_backend}, 'enable')
+                $worker->rpc($worker->{definition}->{consumer_backend}, 'enable'),
+                $worker->rpc($worker->{definition}->{publisher_backend}, 'enable')
             )->then(
                 sub {
                     $self->{logger}->notice($worker->{definition}->full_name . ': ' . $timer->full_name . ': chain of activation successfully completed.');
@@ -187,7 +214,8 @@ sub register_worker_by_name {
 
             collect(
                 $worker->rpc($worker->{definition}->{backend}, 'disable'),
-                $worker->rpc($worker->{definition}->{consumer_backend}, 'disable')
+                $worker->rpc($worker->{definition}->{consumer_backend}, 'disable'),
+                $worker->rpc($worker->{definition}->{publisher_backend}, 'disable')
             )->then(
                 sub {
                     $self->{logger}->notice($worker->{definition}->full_name . ': ' . $timer->full_name . ': chain of deactivation successfully completed.');

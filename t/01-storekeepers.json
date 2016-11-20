@@ -1,7 +1,6 @@
 [
     {
         "name": "t",
-        "queue_size": 0,
         "database_host": "navel-arango",
         "database_port": 8529,
         "database_connection_timeout": 0,
@@ -10,7 +9,11 @@
         "database_tls": 0,
         "database_tls_verify": 0,
         "database_tls_ca_cert": null,
+        "consumer_queue_size": 0,
         "consumer_backend": "Consumer",
-        "consumer_backend_input": null
+        "consumer_backend_input": null,
+        "publisher_queue_size": 0,
+        "publisher_backend": "Publisher",
+        "publisher_backend_input": null
     }
 ]
