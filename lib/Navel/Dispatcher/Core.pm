@@ -139,7 +139,7 @@ my $worker_timer_callback_common_workflow = sub {
         sub {
             unless (shift->[0]) {
                 if (shift->[0]) {
-                    $deferred->reject('connecting of the associated ' . $interface_type . ' is in progress, cannot continue');
+                    die 'connecting of the associated ' . $interface_type . " is in progress, cannot continue\n";
                 } else {
                     $self->{logger}->debug($worker->{definition}->full_name . ': ' . $timer->full_name . ': starting connection of the associated ' . $interface_type . '.');
 
