@@ -184,8 +184,8 @@ sub register_worker_by_name {
             my $timer = shift->begin;
 
             collect(
-                $worker_timer_callback_common_workflow->($self, $worker, $timer, 'consumer'),
-                $worker_timer_callback_common_workflow->($self, $worker, $timer, 'publisher')
+                $self->$worker_timer_callback_common_workflow($worker, $timer, 'consumer'),
+                $self->$worker_timer_callback_common_workflow($worker, $timer, 'publisher')
             )->then(
                 sub {
                     $self->{logger}->notice($worker->{definition}->full_name . ': ' . $timer->full_name . ': chain of action successfully completed.');

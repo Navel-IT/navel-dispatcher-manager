@@ -14,7 +14,7 @@ use parent 'Navel::Base::WorkerManager';
 use File::ShareDir 'dist_dir';
 
 use Navel::Dispatcher::Parser;
-use Navel::API::Swagger2::Dispatcher;
+use Navel::API::OpenAPI::Dispatcher;
 
 #-> methods
 
@@ -36,7 +36,7 @@ sub new {
         core_class => 'Navel::Dispatcher::Core',
         # mojolicious_application_class => 'Navel::Dispatcher::Mojolicious::Application',
         mojolicious_application_home_directory => dist_dir('Navel-Dispatcher') . '/mojolicious/home',
-        swagger => Navel::API::Swagger2::Dispatcher->new
+        openapi_url => Navel::API::OpenAPI::Dispatcher->spec_file_location
     );
 
     $self->{webserver}->app->mode('production') if $self->webserver;

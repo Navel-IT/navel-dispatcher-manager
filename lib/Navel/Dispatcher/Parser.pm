@@ -11,9 +11,9 @@ use Navel::Base;
 
 use parent 'Navel::Base::Daemon::Parser';
 
-use JSON::Validator;
+use JSON::Validator::OpenAPI;
 
-use Navel::API::Swagger2::Dispatcher;
+use Navel::API::OpenAPI::Dispatcher;
 
 #-> methods
 
@@ -23,8 +23,8 @@ sub validate {
     $class->SUPER::validate(
         raw_definition => shift,
         validator => sub {
-            state $json_validator = JSON::Validator->new->schema(
-                Navel::API::Swagger2::Dispatcher->new->expand->api_spec->get('/definitions/meta')
+            state $json_validator = JSON::Validator::OpenAPI->new->schema(
+                Navel::API::OpenAPI::Dispatcher->new->schema->get('/definitions/meta')
             );
 
             [
