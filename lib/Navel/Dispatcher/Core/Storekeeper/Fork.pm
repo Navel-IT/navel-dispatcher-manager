@@ -26,14 +26,18 @@ BEGIN {
 
 use Navel::Base;
 
+use URI;
+use AnyEvent::HTTP;
+
 use Navel::Queue;
+# use Navel::Notification;
 
 BEGIN {
     require ' . $self->{definition}->{consumer_backend} . ';
     require ' . $self->{definition}->{publisher_backend} . ';
 }
 
-my ($initialized, $exiting);
+my ($initialized, $exiting, %database);
 
 *log = \&AnyEvent::Fork::RPC::event;
 
@@ -58,26 +62,6 @@ sub ' . $self->{worker_rpc_method} . ' {
         return;
     }
 
-    unless (defined $backend) {
-        if ($sub eq ' . "'consumer_queue'" . ') {
-            $done->(1, scalar @{consumer_queue->{items}});
-        } elsif ($sub eq ' . "'consumer_dequeue'" . ') {
-            $done->(1, scalar consumer_queue->dequeue);
-        } elsif ($sub eq ' . "'publisher_queue'" . ') {
-            $done->(1, scalar @{publisher_queue->{items}});
-        } elsif ($sub eq ' . "'publisher_dequeue'" . ') {
-            $done->(1, scalar publisher_queue->dequeue);
-        } else {
-            $exiting = 1;
-
-            $done->(1, ' . "'exiting the worker'" . ');
-
-            exit;
-        }
-
-        return;
-    }
-
     unless ($initialized) {
         $initialized = 1;
 
@@ -91,6 +75,43 @@ sub ' . $self->{worker_rpc_method} . ' {
 
         ' . $self->{definition}->{consumer_backend} . '::init;
         ' . $self->{definition}->{publisher_backend} . '::init;
+
+        $database{uri} = URI->new;
+
+        $database{uri}->scheme(' . "'http' . (storekeeper->{database_tls} ? 's' : ''));" . '
+        $database{uri}->userinfo(' . "storekeeper->{database_user} . (defined storekeeper->{database_password} ? ':' . storekeeper->{database_password} : ''))" . ' if defined storekeeper->{database_user};
+        $database{uri}->host(storekeeper->{database_host});
+        $database{uri}->port(storekeeper->{database_port});
+        $database{uri}->path(storekeeper->{database_basepath});
+
+        $database{is_secure} = $database{uri}->secure;
+
+        $database{as_string} = $database{uri}->as_string;
+    }
+
+    unless (defined $backend) {
+        if ($sub eq ' . "'consumer_queue'" . ') {
+            $done->(1, scalar @{consumer_queue->{items}});
+        } elsif ($sub eq ' . "'consumer_dequeue'" . ') {
+            $done->(1, scalar consumer_queue->dequeue);
+        } elsif ($sub eq ' . "'publisher_queue'" . ') {
+            $done->(1, scalar @{publisher_queue->{items}});
+        } elsif ($sub eq ' . "'publisher_dequeue'" . ') {
+            $done->(1, scalar publisher_queue->dequeue);
+        } elsif ($sub eq ' . "'batch'" . ') {
+            # AnyEvent::HTTP # $database{as_string} # $database{is_secure}
+            # Navel::Notification
+
+            $done->(1);
+        } else {
+            $exiting = 1;
+
+            $done->(1, ' . "'exiting the worker'" . ');
+
+            exit;
+        }
+
+        return;
     }
 
     if (my $sub_ref = $backend->can($sub)) {

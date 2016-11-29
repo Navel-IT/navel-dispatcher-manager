@@ -21,6 +21,7 @@ no_index:
     - t
     - inc
 requires:
+  AnyEvent::HTTP: '0'
   File::ShareDir: '0'
   JSON::Validator: '0'
   Mojolicious: '0'
@@ -37,6 +38,7 @@ requires:
   Navel::Queue: '0'
   perl: v5.18.0
   Promises: '0'
+  URI: '0'
 resources:
   license: http://www.apache.org/licenses/LICENSE-2.0.html
   repository: http://github.com/Navel-IT/navel-dispatcher

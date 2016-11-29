@@ -48,7 +48,9 @@ WriteMakefile(
         'Promises' => 0,
         'File::ShareDir' => 0,
         'Mojolicious' => 0,
-        'JSON::Validator' => 0
+        'JSON::Validator' => 0,
+        'URI' => 0,
+        'AnyEvent::HTTP' => 0
     },
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 6.64,

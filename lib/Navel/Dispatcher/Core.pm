@@ -188,6 +188,10 @@ sub register_worker_by_name {
                 $self->$worker_timer_callback_common_workflow($worker, $timer, 'publisher')
             )->then(
                 sub {
+                    $worker->rpc(undef, 'batch');
+                }
+            )->then(
+                sub {
                     $self->{logger}->notice($worker->{definition}->full_name . ': ' . $timer->full_name . ': chain of action successfully completed.');
                 }
             )->catch($on_catch)->finally(
@@ -200,7 +204,6 @@ sub register_worker_by_name {
             my $timer = shift;
 
             collect(
-                $worker->rpc($worker->{definition}->{backend}, 'enable'),
                 $worker->rpc($worker->{definition}->{consumer_backend}, 'enable'),
                 $worker->rpc($worker->{definition}->{publisher_backend}, 'enable')
             )->then(
@@ -213,7 +216,6 @@ sub register_worker_by_name {
             my $timer = shift;
 
             collect(
-                $worker->rpc($worker->{definition}->{backend}, 'disable'),
                 $worker->rpc($worker->{definition}->{consumer_backend}, 'disable'),
                 $worker->rpc($worker->{definition}->{publisher_backend}, 'disable')
             )->then(
