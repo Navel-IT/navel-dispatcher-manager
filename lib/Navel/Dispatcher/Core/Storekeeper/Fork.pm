@@ -78,11 +78,11 @@ sub ' . $self->{worker_rpc_method} . ' {
 
         $database{uri} = URI->new;
 
-        $database{uri}->scheme(' . "'http' . (storekeeper->{database_tls} ? 's' : ''));" . '
-        $database{uri}->userinfo(' . "storekeeper->{database_user} . (defined storekeeper->{database_password} ? ':' . storekeeper->{database_password} : ''))" . ' if defined storekeeper->{database_user};
-        $database{uri}->host(storekeeper->{database_host});
-        $database{uri}->port(storekeeper->{database_port});
-        $database{uri}->path(storekeeper->{database_basepath});
+        $database{uri}->scheme(' . "'http' . (storekeeper()->{database_tls} ? 's' : ''));" . '
+        $database{uri}->userinfo(' . "storekeeper()->{database_user} . (defined storekeeper()->{database_password} ? ':' . storekeeper()->{database_password} : ''))" . ' if defined storekeeper()->{database_user};
+        $database{uri}->host(storekeeper()->{database_host});
+        $database{uri}->port(storekeeper()->{database_port});
+        $database{uri}->path(storekeeper()->{database_basepath});
 
         $database{is_secure} = $database{uri}->secure;
 
