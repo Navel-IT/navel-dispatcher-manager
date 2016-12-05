@@ -44,6 +44,7 @@ WriteMakefile(
         'Navel::Definition::Storekeeper' => 0,
         'Navel::Queue' => 0,
         'Navel::Event' => 0,
+        'Navel::Notification' => 0,
         'Navel::AnyEvent::Pool' => 0,
         'Promises' => 0,
         'File::ShareDir' => 0,

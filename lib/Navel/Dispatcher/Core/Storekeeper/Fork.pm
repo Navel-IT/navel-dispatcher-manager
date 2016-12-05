@@ -30,7 +30,8 @@ use URI;
 use AnyEvent::HTTP;
 
 use Navel::Queue;
-# use Navel::Notification;
+use Navel::Notification;
+use Navel::Utils ' . "'json_constructor'" . ';
 
 BEGIN {
     require ' . $self->{definition}->{consumer_backend} . ';
@@ -38,6 +39,8 @@ BEGIN {
 }
 
 my ($initialized, $exiting, %database);
+
+my $json_constructor = json_constructor;
 
 *log = \&AnyEvent::Fork::RPC::event;
 
@@ -84,8 +87,6 @@ sub ' . $self->{worker_rpc_method} . ' {
         $database{uri}->port(storekeeper()->{database_port});
         $database{uri}->path(storekeeper()->{database_basepath});
 
-        $database{is_secure} = $database{uri}->secure;
-
         $database{as_string} = $database{uri}->as_string;
     }
 
@@ -99,14 +100,57 @@ sub ' . $self->{worker_rpc_method} . ' {
         } elsif ($sub eq ' . "'publisher_dequeue'" . ') {
             $done->(1, scalar publisher_queue->dequeue);
         } elsif ($sub eq ' . "'batch'" . ') {
-            # AnyEvent::HTTP # $database{as_string} # $database{is_secure}
-            # Navel::Notification
+            my $events = consumer_queue()->dequeue;
 
-            $done->(1);
+            http_post(
+                $database{as_string},
+                $json_constructor->encode($events),
+                {
+                    tls_ctx => {
+                        verify => storekeeper()->{database_tls_verify},
+                        ca_cert => storekeeper()->{database_tls_ca_cert}
+                    }
+                },
+                sub {
+                    my ($body, $headers) = @_;
+
+                    my $on_error = sub {
+                        my $message = shift;
+
+                        my $size_left = consumer_queue->size_left;
+
+                        consumer_queue->enqueue($size_left < 0 ? @{$events} : splice @{$events}, - ($size_left > @{$events} ? @{$events} : $size_left));
+
+                        $done->(0, $message);
+                    };
+
+                    if (substr($headers->{Status}, 0, 1) eq ' . "'2'" . ') {
+                        local $@;
+
+                        my @responses = eval {
+                            @{$json_constructor->decode($body)};
+                        };
+
+                        unless ($@) {
+                            for (@responses) {
+                                eval {
+                                    publisher_queue->enqueue(Navel::Notification->new($_)->serialize);
+                                };
+                            }
+
+                            $done->(1);
+                        } else {
+                            $on_error->(' . "'the remote database returned an unexpected response :'" . ' . $@);
+                        }
+                    } else {
+                        $on_error->($headers->{Reason});
+                    }
+                }
+            );
         } else {
             $exiting = 1;
 
-            $done->(1, ' . "'exiting the worker'" . ');
+            $done->(1);
 
             exit;
         }
