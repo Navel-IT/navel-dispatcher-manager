@@ -28,6 +28,7 @@ before_install:
   - f_install_navel_dep navel-anyevent-pool
   - f_install_navel_dep navel-definition-storekeeper
   - f_install_navel_dep navel-event
+  - f_install_navel_dep navel-notification
   - popd
   - cpanm --quiet --notest Devel::Cover::Report::Coveralls
 after_success:
