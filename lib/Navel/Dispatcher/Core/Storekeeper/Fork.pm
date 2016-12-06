@@ -99,8 +99,10 @@ sub ' . $self->{worker_rpc_method} . ' {
             $done->(1, scalar @{publisher_queue->{items}});
         } elsif ($sub eq ' . "'publisher_dequeue'" . ') {
             $done->(1, scalar publisher_queue->dequeue);
+        } elsif ($sub eq ' . "'database_active_connections'" . ') {
+            $done->(1, $AnyEvent::HTTP::ACTIVE);
         } elsif ($sub eq ' . "'batch'" . ') {
-            my $events = consumer_queue()->dequeue;
+            my $events = consumer_queue->dequeue;
 
             http_post(
                 $database{as_string},
@@ -151,10 +153,10 @@ sub ' . $self->{worker_rpc_method} . ' {
 
                             $done->(1);
                         } else {
-                            $on_error->(' . "'the remote database returned an unexpected response :'" . ' . $@);
+                            $on_error->(' . "'the remote database returned an unexpected response: '" . ' . $@);
                         }
                     } else {
-                        $on_error->($headers->{Reason});
+                        $on_error->(' . "'the remote database returned an unexpected response: HTTP ' . \$headers->{Status} . ' - '" . ' . $headers->{Reason});
                     }
                 }
             );
