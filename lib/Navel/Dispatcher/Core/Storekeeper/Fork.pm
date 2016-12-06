@@ -127,7 +127,7 @@ sub ' . $self->{worker_rpc_method} . ' {
                             log(
                                 [
                                     ' . "'err',
-                                    $message . '.'" . '
+                                    \$message . '.'" . '
                                 ]
                             );
                         };
