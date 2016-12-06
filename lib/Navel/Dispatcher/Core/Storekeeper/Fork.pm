@@ -132,11 +132,22 @@ sub ' . $self->{worker_rpc_method} . ' {
                         };
 
                         unless ($@) {
+                            my $errors = 0;
+
                             for (@responses) {
                                 eval {
-                                    publisher_queue->enqueue(Navel::Notification->new($_)->serialize);
+                                    publisher_queue->enqueue(Navel::Notification->new(%{$_})->serialize);
                                 };
+
+                                $errors++ if $@;
                             }
+
+                            log(
+                                [
+                                    ' . "'warning',
+                                    \$errors . ' notification(s) could not be created.'" . '
+                                ]
+                            ) if $errors;
 
                             $done->(1);
                         } else {
