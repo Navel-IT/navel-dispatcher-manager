@@ -104,62 +104,78 @@ sub ' . $self->{worker_rpc_method} . ' {
         } elsif ($sub eq ' . "'batch'" . ') {
             my $events = consumer_queue->dequeue;
 
-            http_post(
-                $database{as_string},
-                $json_constructor->encode($events),
-                {
-                    tls_ctx => {
-                        verify => storekeeper()->{database_tls_verify},
-                        ca_cert => storekeeper()->{database_tls_ca_cert}
-                    }
-                },
-                sub {
-                    my ($body, $headers) = @_;
+            if (@{$events}) {
+                http_post(
+                    $database{as_string},
+                    $json_constructor->encode($events),
+                    {
+                        tls_ctx => {
+                            verify => storekeeper()->{database_tls_verify},
+                            ca_cert => storekeeper()->{database_tls_ca_cert}
+                        }
+                    },
+                    sub {
+                        my ($body, $headers) = @_;
 
-                    my $on_error = sub {
-                        my $message = shift;
+                        my $requeue_on_error = sub {
+                            my $message = shift;
 
-                        my $size_left = consumer_queue->size_left;
+                            my $size_left = consumer_queue->size_left;
 
-                        consumer_queue->enqueue($size_left < 0 ? @{$events} : splice @{$events}, - ($size_left > @{$events} ? @{$events} : $size_left));
-
-                        $done->(0, $message);
-                    };
-
-                    if (substr($headers->{Status}, 0, 1) eq ' . "'2'" . ') {
-                        local $@;
-
-                        my @responses = eval {
-                            @{$json_constructor->decode($body)};
-                        };
-
-                        unless ($@) {
-                            my $errors = 0;
-
-                            for (@responses) {
-                                eval {
-                                    publisher_queue->enqueue(Navel::Notification->new(%{$_})->serialize);
-                                };
-
-                                $errors++ if $@;
-                            }
+                            consumer_queue->enqueue($size_left < 0 ? @{$events} : splice @{$events}, - ($size_left > @{$events} ? @{$events} : $size_left));
 
                             log(
                                 [
-                                    ' . "'warning',
-                                    \$errors . ' notification(s) could not be created.'" . '
+                                    ' . "'err',
+                                    $message . '.'" . '
                                 ]
-                            ) if $errors;
+                            );
+                        };
 
-                            $done->(1);
+                        if (substr($headers->{Status}, 0, 1) eq ' . "'2'" . ') {
+                            local $@;
+
+                            my @responses = eval {
+                                @{$json_constructor->decode($body)};
+                            };
+
+                            unless ($@) {
+                                my $errors = 0;
+
+                                for (@responses) {
+                                    eval {
+                                        publisher_queue->enqueue(Navel::Notification->new(%{$_})->serialize);
+                                    };
+
+                                    $errors++ if $@;
+                                }
+
+                                log(
+                                    [
+                                        ' . "'err',
+                                        \$errors . ' notification(s) could not be created.'" . '
+                                    ]
+                                ) if $errors;
+                            } else {
+                                $requeue_on_error->(' . "'the remote database returned an unexpected response: '" . ' . $@);
+                            }
                         } else {
-                            $on_error->(' . "'the remote database returned an unexpected response: '" . ' . $@);
+                            $requeue_on_error->(' . "'the remote database returned an unexpected response: HTTP ' . \$headers->{Status} . ' - '" . ' . $headers->{Reason});
                         }
-                    } else {
-                        $on_error->(' . "'the remote database returned an unexpected response: HTTP ' . \$headers->{Status} . ' - '" . ' . $headers->{Reason});
+
+                        $done->(1);
                     }
-                }
-            );
+                );
+            } else {
+                log(
+                    [
+                        ' . "'debug',
+                        'no event to batch.'" . '
+                    ]
+                );
+
+                $done->(1);
+            }
         } else {
             $exiting = 1;
 
