@@ -34,7 +34,7 @@ sub new {
         @_,
         meta => Navel::Dispatcher::Parser->new,
         core_class => 'Navel::Dispatcher::Core',
-        # mojolicious_application_class => 'Navel::Dispatcher::Mojolicious::Application',
+        mojolicious_application_class => 'Navel::Dispatcher::Mojolicious::Application',
         mojolicious_application_home_directory => dist_dir('Navel-Dispatcher') . '/mojolicious/home',
         openapi_url => Navel::API::OpenAPI::Dispatcher->spec_file_location
     );
