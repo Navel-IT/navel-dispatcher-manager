@@ -55,7 +55,7 @@ sub show_associated_consumer_queue {
 }
 
 sub delete_all_events_from_associated_consumer_queue {
-    shift->_delete_all_events_from_associated_queue('consumer_queue');
+    shift->_delete_all_events_from_associated_queue('consumer_dequeue');
 }
 
 sub show_associated_consumer_connection_status {
@@ -67,7 +67,7 @@ sub show_associated_publisher_queue {
 }
 
 sub delete_all_events_from_associated_publisher_queue {
-    shift->_delete_all_events_from_associated_queue('publisher_queue');
+    shift->_delete_all_events_from_associated_queue('publisher_dequeue');
 }
 
 sub show_associated_publisher_connection_status {
