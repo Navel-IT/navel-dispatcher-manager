@@ -143,11 +143,15 @@ sub ' . $self->{worker_rpc_method} . ' {
                                 my $errors = 0;
 
                                 for (@{$responses}) {
-                                    eval {
-                                        publisher_queue->enqueue(Navel::Notification->new(%{$_})->serialize);
+                                    my $notification = eval {
+                                        Navel::Notification->new(%{$_})->serialize;
                                     };
 
-                                    $errors++ if $@;
+                                    unless ($@) {
+                                        publisher_queue->enqueue($notification);
+                                    } else {
+                                        $errors++;
+                                    }
                                 }
 
                                 log(
