@@ -135,14 +135,14 @@ sub ' . $self->{worker_rpc_method} . ' {
                         if (substr($headers->{Status}, 0, 1) eq ' . "'2'" . ') {
                             local $@;
 
-                            my @responses = eval {
-                                @{$json_constructor->decode($body)};
+                            my $responses = eval {
+                                $json_constructor->decode($body);
                             };
 
-                            unless ($@) {
+                            if  ( ! $@ && ref $responses eq ' . "'ARRAY'" . ') {
                                 my $errors = 0;
 
-                                for (@responses) {
+                                for (@{$responses}) {
                                     eval {
                                         publisher_queue->enqueue(Navel::Notification->new(%{$_})->serialize);
                                     };
@@ -157,7 +157,7 @@ sub ' . $self->{worker_rpc_method} . ' {
                                     ]
                                 ) if $errors;
                             } else {
-                                $requeue_on_error->(' . "'the remote database returned an unexpected response: '" . ' . $@);
+                                $requeue_on_error->(' . "'the remote database returned an unexpected response'" . ');
                             }
                         } else {
                             $requeue_on_error->(' . "'the remote database returned an unexpected response: HTTP ' . \$headers->{Status} . ' - '" . ' . $headers->{Reason});
