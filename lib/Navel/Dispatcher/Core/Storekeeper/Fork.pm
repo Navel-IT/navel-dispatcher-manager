@@ -124,9 +124,9 @@ sub ' . $self->{worker_rpc_method} . ' {
 
                             consumer_queue->enqueue($size_left < 0 ? @{$events} : splice @{$events}, - ($size_left > @{$events} ? @{$events} : $size_left));
 
-                            log(
+                            ' . $self->{worker_package} . "::log(
                                 [
-                                    ' . "'err',
+                                    'err',
                                     \$message . '.'" . '
                                 ]
                             );
@@ -140,7 +140,7 @@ sub ' . $self->{worker_rpc_method} . ' {
                             };
 
                             if  ( ! $@ && ref $responses eq ' . "'ARRAY'" . ') {
-                                my $errors = 0;
+                                my $errors = @{$events} - @{$responses};
 
                                 for (@{$responses}) {
                                     my $notification = eval {
@@ -154,9 +154,9 @@ sub ' . $self->{worker_rpc_method} . ' {
                                     }
                                 }
 
-                                log(
+                                ' . $self->{worker_package} . "::log(
                                     [
-                                        ' . "'err',
+                                        'err',
                                         \$errors . ' notification(s) could not be created.'" . '
                                     ]
                                 ) if $errors;
@@ -171,9 +171,9 @@ sub ' . $self->{worker_rpc_method} . ' {
                     }
                 );
             } else {
-                log(
+                ' . $self->{worker_package} . "::log(
                     [
-                        ' . "'debug',
+                        'debug',
                         'no event to batch.'" . '
                     ]
                 );
