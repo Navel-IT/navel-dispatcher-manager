@@ -188,7 +188,10 @@ sub register_worker_by_name {
                 $self->$worker_timer_callback_common_workflow($worker, $timer, 'publisher')
             )->then(
                 sub {
-                    $worker->rpc(undef, 'batch');
+                    collect(
+                        $worker->rpc($worker->{definition}->{publisher_backend}, 'publish'),
+                        $worker->rpc(undef, 'batch')
+                    );
                 }
             )->then(
                 sub {
