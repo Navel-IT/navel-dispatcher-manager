@@ -108,11 +108,9 @@ sub ' . $self->{worker_rpc_method} . ' {
                 http_post(
                     $database{as_string},
                     $json_constructor->encode($events),
-                    {
-                        tls_ctx => {
-                            verify => storekeeper()->{database_tls_verify},
-                            ca_cert => storekeeper()->{database_tls_ca_cert}
-                        }
+                    tls_ctx => {
+                        verify => storekeeper()->{database_tls_verify},
+                        ca_cert => storekeeper()->{database_tls_ca_cert}
                     },
                     sub {
                         my ($body, $headers) = @_;
