@@ -138,7 +138,7 @@ sub ' . $self->{worker_rpc_method} . ' {
                             };
 
                             if  ( ! $@ && ref $responses eq ' . "'ARRAY'" . ') {
-                                my $errors = @{$events} - @{$responses};
+                                my $errors = 0;
 
                                 for (@{$responses}) {
                                     my $notification = eval {
