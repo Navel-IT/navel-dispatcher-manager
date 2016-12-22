@@ -133,14 +133,14 @@ sub ' . $self->{worker_rpc_method} . ' {
                         if (substr($headers->{Status}, 0, 1) eq ' . "'2'" . ') {
                             local $@;
 
-                            my $responses = eval {
+                            my $response = eval {
                                 $json_constructor->decode($body);
                             };
 
-                            if  ( ! $@ && ref $responses eq ' . "'ARRAY'" . ') {
+                            if  ( ! $@ && ref $response eq ' . "'HASH'" . ' && ref $response->{notifications} eq ' . "'ARRAY'" . ' && ref $response->{errors} eq ' . "'ARRAY'" . ') {
                                 my $errors = 0;
 
-                                for (@{$responses}) {
+                                for (@{$response->{notifications}}) {
                                     my $notification = eval {
                                         Navel::Notification->new(%{$_})->serialize;
                                     };
@@ -158,11 +158,18 @@ sub ' . $self->{worker_rpc_method} . ' {
                                         \$errors . ' notification(s) could not be created.'" . '
                                     ]
                                 ) if $errors;
+
+                                ' . $self->{worker_package} . "::log(
+                                    [
+                                        'err',
+                                        'the remote database returned an error: '" . ' . $_
+                                    ]
+                                ) for @{$response->{errors}};
                             } else {
                                 $requeue_on_error->(' . "'the remote database returned an unexpected response'" . ');
                             }
                         } else {
-                            $requeue_on_error->(' . "'the remote database returned an unexpected response: HTTP ' . \$headers->{Status} . ' - '" . ' . $headers->{Reason});
+                            $requeue_on_error->(' . "'the remote database returned HTTP '" . ' . $headers->{Status});
                         }
 
                         $done->(1);
