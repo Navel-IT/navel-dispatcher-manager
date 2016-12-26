@@ -10,7 +10,7 @@ use warnings;
 
 use Test::More tests => 3;
 use Test::Exception;
-# use Test::Mojo;
+use Test::Mojo;
 
 BEGIN {
     use_ok('Navel::Dispatcher');
