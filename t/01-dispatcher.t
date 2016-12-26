@@ -29,18 +29,18 @@ lives_ok {
             facility => 'local0',
             severity => 'debug'
         ),
-        meta_configuration_file_path => $meta_configuration_file_path #,
-        # webservice_listeners => [
-        #     'http://*:8080'
-        # ]
+        meta_configuration_file_path => $meta_configuration_file_path,
+        webservice_listeners => [
+            'http://*:8080'
+        ]
     );
 } 'Navel::Dispatcher->new: loading and preparing meta configuration from ' . $meta_configuration_file_path;
 
-# lives_ok {
-#     $mojolicious_tester = Test::Mojo->new(
-#         $dispatcher->{webserver}->app
-#     );
-# }
+lives_ok {
+    $mojolicious_tester = Test::Mojo->new(
+        $dispatcher->{webserver}->app
+    );
+}
 
 #-> END
 
