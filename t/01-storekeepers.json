@@ -2,8 +2,7 @@
     {
         "name": "t",
         "database_tls": 0,
-        "database_tls_verify": 0,
-        "database_tls_ca_cert": null,
+        "database_tls_ctx": {},
         "database_user": null,
         "database_password": null,
         "database_host": "navel-arango",
