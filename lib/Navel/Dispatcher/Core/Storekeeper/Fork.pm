@@ -105,73 +105,90 @@ sub ' . $self->{worker_rpc_method} . ' {
             my $events = consumer_queue->dequeue;
 
             if (@{$events}) {
-                http_post(
-                    $database{as_string},
-                    $json_constructor->encode($events),
-                    tls_ctx => storekeeper()->{database_tls_ctx},
-                    sub {
-                        my ($body, $headers) = @_;
+                local $@;
 
-                        my $requeue_on_error = sub {
-                            my $message = shift;
+                my $serialized_events = eval {
+                    $json_constructor->encode($events)
+                };
 
-                            my $size_left = consumer_queue->size_left;
+                unless ($@) {
+                    http_post(
+                        $database{as_string},
+                        $serialized_events,
+                        tls_ctx => storekeeper()->{database_tls_ctx},
+                        sub {
+                            my ($body, $headers) = @_;
 
-                            consumer_queue->enqueue($size_left < 0 ? @{$events} : splice @{$events}, - ($size_left > @{$events} ? @{$events} : $size_left));
+                            my $requeue_on_error = sub {
+                                my $message = shift;
 
-                            ' . $self->{worker_package} . "::log(
-                                [
-                                    'err',
-                                    \$message . '.'" . '
-                                ]
-                            );
-                        };
+                                my $size_left = consumer_queue->size_left;
 
-                        if (substr($headers->{Status}, 0, 1) eq ' . "'2'" . ') {
-                            local $@;
+                                consumer_queue->enqueue($size_left < 0 ? @{$events} : splice @{$events}, - ($size_left > @{$events} ? @{$events} : $size_left));
 
-                            my $response = eval {
-                                $json_constructor->decode($body);
+                                ' . $self->{worker_package} . "::log(
+                                    [
+                                        'err',
+                                        \$message . '.'" . '
+                                    ]
+                                );
                             };
 
-                            if  ( ! $@ && ref $response eq ' . "'HASH'" . ' && ref $response->{notifications} eq ' . "'ARRAY'" . ' && ref $response->{errors} eq ' . "'ARRAY'" . ') {
-                                my $errors = 0;
+                            if (substr($headers->{Status}, 0, 1) eq ' . "'2'" . ') {
+                                local $@;
 
-                                for (@{$response->{notifications}}) {
-                                    my $notification = eval {
-                                        Navel::Notification->new(%{$_})->serialize;
-                                    };
+                                my $response = eval {
+                                    $json_constructor->decode($body);
+                                };
 
-                                    unless ($@) {
-                                        publisher_queue->enqueue($notification);
-                                    } else {
-                                        $errors++;
+                                if  ( ! $@ && ref $response eq ' . "'HASH'" . ' && ref $response->{notifications} eq ' . "'ARRAY'" . ' && ref $response->{errors} eq ' . "'ARRAY'" . ') {
+                                    my $errors = 0;
+
+                                    for (@{$response->{notifications}}) {
+                                        my $notification = eval {
+                                            Navel::Notification->new(%{$_})->serialize;
+                                        };
+
+                                        unless ($@) {
+                                            publisher_queue->enqueue($notification);
+                                        } else {
+                                            $errors++;
+                                        }
                                     }
+
+                                    ' . $self->{worker_package} . "::log(
+                                        [
+                                            'err',
+                                            \$errors . ' notification(s) could not be created.'" . '
+                                        ]
+                                    ) if $errors;
+
+                                    ' . $self->{worker_package} . "::log(
+                                        [
+                                            'err',
+                                            'the remote database returned an error: '" . ' . $_
+                                        ]
+                                    ) for @{$response->{errors}};
+                                } else {
+                                    $requeue_on_error->(' . "'the remote database returned an unexpected response'" . ');
                                 }
-
-                                ' . $self->{worker_package} . "::log(
-                                    [
-                                        'err',
-                                        \$errors . ' notification(s) could not be created.'" . '
-                                    ]
-                                ) if $errors;
-
-                                ' . $self->{worker_package} . "::log(
-                                    [
-                                        'err',
-                                        'the remote database returned an error: '" . ' . $_
-                                    ]
-                                ) for @{$response->{errors}};
                             } else {
-                                $requeue_on_error->(' . "'the remote database returned an unexpected response'" . ');
+                                $requeue_on_error->(' . "'the remote database returned HTTP '" . ' . $headers->{Status});
                             }
-                        } else {
-                            $requeue_on_error->(' . "'the remote database returned HTTP '" . ' . $headers->{Status});
-                        }
 
-                        $done->(1);
-                    }
-                );
+                            $done->(1);
+                        }
+                    );
+                } else {
+                    ' . $self->{worker_package} . "::log(
+                        [
+                            'err'" . ',
+                            $@
+                        ]
+                    );
+
+                    $done->(1);
+                }
             } else {
                 ' . $self->{worker_package} . "::log(
                     [
