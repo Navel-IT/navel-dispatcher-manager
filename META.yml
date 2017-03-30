@@ -26,7 +26,7 @@ requires:
   JSON::Validator: '0'
   Mojolicious: '0'
   Navel::API: '0'
-  AnyEvent::Fork::RPC::Serializer::Sereal: '0'
+  AnyEvent::Fork::RPC::Serializer::Cpanel::JSON::XS: '0'
   Navel::AnyEvent::Pool: '0'
   Navel::Base: '0'
   Navel::Base::WorkerManager: '0'
