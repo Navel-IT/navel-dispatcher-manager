@@ -1,10 +1,11 @@
 ---
-abstract: navel-dispatcher
+abstract: navel-dispatcher-manager
 author:
   - 'Yoann Le Garff, Nicolas Boquet and Yann Le Bras'
 build_requires:
   ExtUtils::MakeMaker: '0'
   Test::Exception: '0'
+  Test::Mojo: '0'
   Test::More: '0'
 configure_requires:
   ExtUtils::MakeMaker: '6.64'
@@ -30,7 +31,7 @@ requires:
   Navel::AnyEvent::Pool: '0'
   Navel::Base: '0'
   Navel::Base::WorkerManager: '0'
-  Navel::Definition::Storekeeper: '0'
+  Navel::Definition::Dispatcher: '0'
   Navel::Event: '0'
   Navel::Logger: '0'
   Navel::Mojolicious::Plugin::Logger: '0'
@@ -42,6 +43,6 @@ requires:
   URI: '0'
 resources:
   license: http://www.apache.org/licenses/LICENSE-2.0.html
-  repository: http://github.com/Navel-IT/navel-dispatcher
+  repository: http://github.com/Navel-IT/navel-dispatcher-manager
 version: '0.1'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

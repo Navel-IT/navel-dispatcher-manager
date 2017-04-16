@@ -1,5 +1,5 @@
 # Copyright (C) 2015-2017 Yoann Le Garff, Nicolas Boquet and Yann Le Bras
-# navel-dispatcher is licensed under the Apache License, Version 2.0
+# navel-dispatcher-manager is licensed under the Apache License, Version 2.0
 
 #-> BEGIN
 
@@ -13,7 +13,7 @@ use Test::Exception;
 use Test::Mojo;
 
 BEGIN {
-    use_ok('Navel::Dispatcher');
+    use_ok('Navel::DispatcherManager');
     use_ok('Navel::Logger');
 }
 
@@ -21,10 +21,10 @@ BEGIN {
 
 my $meta_configuration_file_path = 't/01-meta.json';
 
-my ($dispatcher, $mojolicious_tester);
+my ($dispatcher_manager, $mojolicious_tester);
 
 lives_ok {
-    $dispatcher = Navel::Dispatcher->new(
+    $dispatcher_manager = Navel::DispatcherManager->new(
         logger => Navel::Logger->new(
             facility => 'local0',
             severity => 'debug'
@@ -34,11 +34,11 @@ lives_ok {
             'http://*:8080'
         ]
     );
-} 'Navel::Dispatcher->new: loading and preparing meta configuration from ' . $meta_configuration_file_path;
+} 'Navel::DispatcherManager->new: loading and preparing meta configuration from ' . $meta_configuration_file_path;
 
 lives_ok {
     $mojolicious_tester = Test::Mojo->new(
-        $dispatcher->{webserver}->app
+        $dispatcher_manager->{webserver}->app
     );
 }
 

@@ -1,11 +1,11 @@
 # Copyright (C) 2015-2017 Yoann Le Garff, Nicolas Boquet and Yann Le Bras
-# navel-dispatcher is licensed under the Apache License, Version 2.0
+# navel-dispatcher-manager is licensed under the Apache License, Version 2.0
 
 #-> BEGIN
 
 #-> initialization
 
-package Navel::Dispatcher::Core::Storekeeper::Fork 0.1;
+package Navel::DispatcherManager::Core::Dispatcher::Fork 0.1;
 
 use Navel::Base;
 
@@ -38,7 +38,7 @@ BEGIN {
     require ' . $self->{definition}->{publisher_backend} . ';
 }
 
-my ($initialized, $exiting, %database);
+my ($initialized, $exiting, %filler);
 
 my $json_constructor = json_constructor;
 
@@ -57,7 +57,7 @@ sub publisher_queue {
 }
 
 sub ' . $self->{worker_rpc_method} . ' {
-    my ($done, $backend, $sub, $meta, $storekeeper) = @_;
+    my ($done, $backend, $sub, $meta, $dispatcher) = @_;
 
     if ($exiting) {
         $done->(0, ' . "'currently exiting the worker'" . ');
@@ -72,22 +72,22 @@ sub ' . $self->{worker_rpc_method} . ' {
             $meta;
         };
 
-        *storekeeper = sub {
-            $storekeeper;
+        *dispatcher = sub {
+            $dispatcher;
         };
 
         ' . $self->{definition}->{consumer_backend} . '::init;
         ' . $self->{definition}->{publisher_backend} . '::init;
 
-        $database{uri} = URI->new;
+        $filler{uri} = URI->new;
 
-        $database{uri}->scheme(' . "'http' . (storekeeper()->{database_tls} ? 's' : ''));" . '
-        $database{uri}->userinfo(' . "storekeeper()->{database_user} . (defined storekeeper()->{database_password} ? ':' . storekeeper()->{database_password} : ''))" . ' if defined storekeeper()->{database_user};
-        $database{uri}->host(storekeeper()->{database_host});
-        $database{uri}->port(storekeeper()->{database_port});
-        $database{uri}->path(storekeeper()->{database_basepath});
+        $filler{uri}->scheme(' . "'http' . (dispatcher()->{filler_tls} ? 's' : ''));" . '
+        $filler{uri}->userinfo(' . "dispatcher()->{filler_user} . (defined dispatcher()->{filler_password} ? ':' . dispatcher()->{filler_password} : ''))" . ' if defined dispatcher()->{filler_user};
+        $filler{uri}->host(dispatcher()->{filler_host});
+        $filler{uri}->port(dispatcher()->{filler_port});
+        $filler{uri}->path(dispatcher()->{filler_basepath});
 
-        $database{as_string} = $database{uri}->as_string;
+        $filler{as_string} = $filler{uri}->as_string;
     }
 
     unless (defined $backend) {
@@ -99,7 +99,7 @@ sub ' . $self->{worker_rpc_method} . ' {
             $done->(1, scalar @{publisher_queue->{items}});
         } elsif ($sub eq ' . "'publisher_dequeue'" . ') {
             $done->(1, scalar publisher_queue->dequeue);
-        } elsif ($sub eq ' . "'database_active_connections'" . ') {
+        } elsif ($sub eq ' . "'filler_active_connections'" . ') {
             $done->(1, $AnyEvent::HTTP::ACTIVE);
         } elsif ($sub eq ' . "'batch'" . ') {
             my $events = consumer_queue->dequeue;
@@ -113,9 +113,9 @@ sub ' . $self->{worker_rpc_method} . ' {
 
                 unless ($@) {
                     http_post(
-                        $database{as_string},
+                        $filler{as_string},
                         $serialized_events,
-                        tls_ctx => storekeeper()->{database_tls_ctx},
+                        tls_ctx => dispatcher()->{filler_tls_ctx},
                         sub {
                             my ($body, $headers) = @_;
 
@@ -166,14 +166,14 @@ sub ' . $self->{worker_rpc_method} . ' {
                                     ' . $self->{worker_package} . "::log(
                                         [
                                             'err',
-                                            'the remote database returned an error: '" . ' . $_
+                                            'the filler returned an error: '" . ' . $_
                                         ]
                                     ) for @{$response->{errors}};
                                 } else {
-                                    $requeue_on_error->(' . "'the remote database returned an unexpected response'" . ');
+                                    $requeue_on_error->(' . "'the filler returned an unexpected response'" . ');
                                 }
                             } else {
-                                $requeue_on_error->(' . "'the remote database returned HTTP '" . ' . $headers->{Status});
+                                $requeue_on_error->(' . "'the filler returned HTTP '" . ' . $headers->{Status});
                             }
 
                             $done->(1);
@@ -238,7 +238,7 @@ __END__
 
 =head1 NAME
 
-Navel::Dispatcher::Core::Storekeeper::Fork
+Navel::DispatcherManager::Core::Dispatcher::Fork
 
 =head1 COPYRIGHT
 
@@ -246,6 +246,6 @@ Copyright (C) 2015-2017 Yoann Le Garff, Nicolas Boquet and Yann Le Bras
 
 =head1 LICENSE
 
-navel-dispatcher is licensed under the Apache License, Version 2.0
+navel-dispatcher-manager is licensed under the Apache License, Version 2.0
 
 =cut

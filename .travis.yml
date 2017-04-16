@@ -26,7 +26,7 @@ before_install:
   - f_install_navel_dep navel-mojolicious-plugin-logger
   - f_install_navel_dep navel-mojolicious-plugin-openapi-stdresponses
   - f_install_navel_dep navel-anyevent-pool
-  - f_install_navel_dep navel-definition-storekeeper
+  - f_install_navel_dep navel-definition-dispatcher
   - f_install_navel_dep navel-event
   - f_install_navel_dep navel-notification
   - popd

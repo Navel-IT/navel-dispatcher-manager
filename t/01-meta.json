@@ -1,6 +1,6 @@
 {
-    "storekeepers": {
-        "definitions_from_file": "t/01-storekeepers.json",
+    "dispatchers": {
+        "definitions_from_file": "t/01-dispatchers.json",
         "maximum": 0
     }
 }

@@ -1,7 +1,7 @@
 #!perl
 
 # Copyright (C) 2015-2017 Yoann Le Garff, Nicolas Boquet and Yann Le Bras
-# navel-dispatcher is licensed under the Apache License, Version 2.0
+# navel-dispatcher-manager is licensed under the Apache License, Version 2.0
 
 #-> BEGIN
 
@@ -9,11 +9,11 @@
 
 use Navel::Base;
 
-use Navel::Dispatcher;
+use Navel::DispatcherManager;
 
 #-> main
 
-Navel::Dispatcher->run;
+Navel::DispatcherManager->run;
 
 #-> END
 
@@ -25,7 +25,7 @@ __END__
 
 =head1 NAME
 
-navel-dispatcher - Run Navel::Dispatcher
+navel-dispatcher-manager - Run Navel::DispatcherManager
 
 =head1 COPYRIGHT
 
@@ -33,6 +33,6 @@ Copyright (C) 2015-2017 Yoann Le Garff, Nicolas Boquet and Yann Le Bras
 
 =head1 LICENSE
 
-navel-dispatcher is licensed under the Apache License, Version 2.0
+navel-dispatcher-manager is licensed under the Apache License, Version 2.0
 
 =cut

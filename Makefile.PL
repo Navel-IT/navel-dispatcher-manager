@@ -1,5 +1,5 @@
 # Copyright (C) 2015-2017 Yoann Le Garff, Nicolas Boquet and Yann Le Bras
-# navel-dispatcher is licensed under the Apache License, Version 2.0
+# navel-dispatcher-manager is licensed under the Apache License, Version 2.0
 
 #-> BEGIN
 
@@ -19,9 +19,9 @@ my $min_perl_version = '5.18.0';
 install_share('share');
 
 WriteMakefile(
-    NAME => 'Navel::Dispatcher',
-    VERSION_FROM => 'lib/Navel/Dispatcher.pm',
-    ABSTRACT => 'navel-dispatcher',
+    NAME => 'Navel::DispatcherManager',
+    VERSION_FROM => 'lib/Navel/DispatcherManager.pm',
+    ABSTRACT => 'navel-dispatcher-manager',
     AUTHOR => 'Yoann Le Garff, Nicolas Boquet and Yann Le Bras',
     LICENSE => 'apache_2_0',
     META_MERGE => {
@@ -30,7 +30,7 @@ WriteMakefile(
         },
         resources => {
             license => 'http://www.apache.org/licenses/LICENSE-2.0.html',
-            repository => 'http://github.com/Navel-IT/navel-dispatcher'
+            repository => 'http://github.com/Navel-IT/navel-dispatcher-manager'
         }
     },
     MIN_PERL_VERSION => $min_perl_version,
@@ -41,7 +41,7 @@ WriteMakefile(
         'Navel::Mojolicious::Plugin::OpenAPI::StdResponses' => 0,
         'Navel::Logger' => 0,
         'Navel::API' => 0,
-        'Navel::Definition::Storekeeper' => 0,
+        'Navel::Definition::Dispatcher' => 0,
         'Navel::Queue' => 0,
         'Navel::Event' => 0,
         'Navel::Notification' => 0,
@@ -59,10 +59,11 @@ WriteMakefile(
     },
     TEST_REQUIRES => {
         'Test::More' => 0,
-        'Test::Exception' => 0
+        'Test::Exception' => 0,
+        'Test::Mojo' => 0
     },
     EXE_FILES => [
-        'bin/navel-dispatcher'
+        'bin/navel-dispatcher-manager'
     ],
     test => {
         TESTS => 't/*.t'

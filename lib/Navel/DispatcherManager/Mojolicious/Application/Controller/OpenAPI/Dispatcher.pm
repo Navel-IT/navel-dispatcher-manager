@@ -1,11 +1,11 @@
 # Copyright (C) 2015-2017 Yoann Le Garff, Nicolas Boquet and Yann Le Bras
-# navel-dispatcher is licensed under the Apache License, Version 2.0
+# navel-dispatcher-manager is licensed under the Apache License, Version 2.0
 
 #-> BEGIN
 
 #-> initialization
 
-package Navel::Dispatcher::Mojolicious::Application::Controller::OpenAPI::Storekeeper 0.1;
+package Navel::DispatcherManager::Mojolicious::Application::Controller::OpenAPI::Dispatcher 0.1;
 
 use Navel::Base;
 
@@ -15,7 +15,7 @@ use parent 'Navel::Base::WorkerManager::Mojolicious::Application::Controller::Op
 
 #-> methods
 
-sub show_associated_database_connection_status {
+sub show_associated_filler_connection_status {
     my $controller = shift->openapi->valid_input || return;
 
     my $name = $controller->validation->param('name');
@@ -26,7 +26,7 @@ sub show_associated_database_connection_status {
 
     $controller->render_later;
 
-    $controller->daemon->{core}->{worker_per_definition}->{$definition->{name}}->rpc(undef, 'database_active_connections')->then(
+    $controller->daemon->{core}->{worker_per_definition}->{$definition->{name}}->rpc(undef, 'filler_active_connections')->then(
         sub {
             $controller->render(
                 openapi => {
@@ -41,7 +41,7 @@ sub show_associated_database_connection_status {
                 openapi => $controller->ok_ko(
                     [],
                     [
-                        (@_ ? join ', ', @_ : 'unexpected error') . ' (database_active_connections).'
+                        (@_ ? join ', ', @_ : 'unexpected error') . ' (filler_active_connections).'
                     ]
                 ),
                 status => 500
@@ -90,7 +90,7 @@ __END__
 
 =head1 NAME
 
-Navel::Dispatcher::Mojolicious::Application::Controller::OpenAPI::Storekeeper
+Navel::DispatcherManager::Mojolicious::Application::Controller::OpenAPI::Dispatcher
 
 =head1 COPYRIGHT
 
@@ -98,6 +98,6 @@ Copyright (C) 2015-2017 Yoann Le Garff, Nicolas Boquet and Yann Le Bras
 
 =head1 LICENSE
 
-navel-dispatcher is licensed under the Apache License, Version 2.0
+navel-dispatcher-manager is licensed under the Apache License, Version 2.0
 
 =cut

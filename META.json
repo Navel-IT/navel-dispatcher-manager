@@ -1,5 +1,5 @@
 {
-   "abstract" : "navel-dispatcher",
+   "abstract" : "navel-dispatcher-manager",
    "author" : [
       "Yoann Le Garff, Nicolas Boquet and Yann Le Bras"
    ],
@@ -24,6 +24,7 @@
          "requires" : {
             "ExtUtils::MakeMaker" : "0",
             "Test::Exception" : "0",
+            "Test::Mojo" : "0",
             "Test::More" : "0"
          }
       },
@@ -44,7 +45,7 @@
             "Navel::AnyEvent::Pool" : "0",
             "Navel::Base" : "0",
             "Navel::Base::WorkerManager" : "0",
-            "Navel::Definition::Storekeeper" : "0",
+            "Navel::Definition::Dispatcher" : "0",
             "Navel::Event" : "0",
             "Navel::Logger" : "0",
             "Navel::Mojolicious::Plugin::Logger" : "0",
@@ -63,7 +64,7 @@
          "http://www.apache.org/licenses/LICENSE-2.0.html"
       ],
       "repository" : {
-         "url" : "http://github.com/Navel-IT/navel-dispatcher"
+         "url" : "http://github.com/Navel-IT/navel-dispatcher-manager"
       }
    },
    "version" : "0.1",

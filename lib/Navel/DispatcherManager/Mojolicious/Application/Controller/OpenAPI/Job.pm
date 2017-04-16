@@ -1,11 +1,11 @@
 # Copyright (C) 2015-2017 Yoann Le Garff, Nicolas Boquet and Yann Le Bras
-# navel-dispatcher is licensed under the Apache License, Version 2.0
+# navel-dispatcher-manager is licensed under the Apache License, Version 2.0
 
 #-> BEGIN
 
 #-> initialization
 
-package Navel::Dispatcher::Mojolicious::Application::Controller::OpenAPI::Job 0.1;
+package Navel::DispatcherManager::Mojolicious::Application::Controller::OpenAPI::Job 0.1;
 
 use Navel::Base;
 
@@ -29,7 +29,7 @@ __END__
 
 =head1 NAME
 
-Navel::Dispatcher::Mojolicious::Application::Controller::OpenAPI::Job
+Navel::DispatcherManager::Mojolicious::Application::Controller::OpenAPI::Job
 
 =head1 COPYRIGHT
 
@@ -37,6 +37,6 @@ Copyright (C) 2015-2017 Yoann Le Garff, Nicolas Boquet and Yann Le Bras
 
 =head1 LICENSE
 
-navel-dispatcher is licensed under the Apache License, Version 2.0
+navel-dispatcher-manager is licensed under the Apache License, Version 2.0
 
 =cut
