@@ -38,7 +38,7 @@ requires:
   Navel::Mojolicious::Plugin::OpenAPI::StdResponses: '0'
   Navel::Notification: '0'
   Navel::Queue: '0'
-  perl: v5.18.0
+  perl: v5.20.0
   Promises: '0'
   URI: '0'
 resources:
