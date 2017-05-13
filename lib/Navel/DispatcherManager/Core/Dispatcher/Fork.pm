@@ -105,8 +105,6 @@ sub ' . $self->{worker_rpc_method} . ' {
             my $events = consumer_queue->dequeue;
 
             if (@{$events}) {
-                local $@;
-
                 my $serialized_events = eval {
                     $json_constructor->encode($events)
                 };
@@ -135,8 +133,6 @@ sub ' . $self->{worker_rpc_method} . ' {
                             };
 
                             if (substr($headers->{Status}, 0, 1) eq ' . "'2'" . ') {
-                                local $@;
-
                                 my $response = eval {
                                     $json_constructor->decode($body);
                                 };
