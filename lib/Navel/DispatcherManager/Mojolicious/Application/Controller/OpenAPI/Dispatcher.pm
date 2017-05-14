@@ -20,13 +20,13 @@ sub show_associated_filler_connection_status {
 
     my $name = $controller->validation->param('name');
 
-    my $definition = $controller->daemon->{core}->{definitions}->definition_by_name($name);
+    my $definition = $controller->navel->daemon->{core}->{definitions}->definition_by_name($name);
 
     return $controller->navel->api->responses->resource_not_found($name) unless defined $definition;
 
     $controller->render_later;
 
-    $controller->daemon->{core}->{worker_per_definition}->{$definition->{name}}->rpc(undef, 'filler_active_connections')->then(
+    $controller->navel->daemon->{core}->{worker_per_definition}->{$definition->{name}}->rpc(undef, 'filler_active_connections')->then(
         sub {
             $controller->render(
                 openapi => {
