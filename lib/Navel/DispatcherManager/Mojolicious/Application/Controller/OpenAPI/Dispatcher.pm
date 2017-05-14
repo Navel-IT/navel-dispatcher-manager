@@ -22,7 +22,7 @@ sub show_associated_filler_connection_status {
 
     my $definition = $controller->daemon->{core}->{definitions}->definition_by_name($name);
 
-    return $controller->resource_not_found($name) unless defined $definition;
+    return $controller->navel->stdresponses->resource_not_found($name) unless defined $definition;
 
     $controller->render_later;
 
@@ -38,7 +38,7 @@ sub show_associated_filler_connection_status {
     )->catch(
         sub {
             $controller->render(
-                openapi => $controller->ok_ko(
+                openapi => $controller->navel->logger->ok(
                     [],
                     [
                         (@_ ? join ', ', @_ : 'unexpected error') . ' (filler_active_connections).'
