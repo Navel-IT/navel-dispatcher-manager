@@ -38,7 +38,7 @@ sub show_associated_filler_connection_status {
     )->catch(
         sub {
             $controller->render(
-                openapi => $controller->navel->logger->ok(
+                openapi => $controller->navel->logger->ok_ko(
                     [],
                     [
                         (@_ ? join ', ', @_ : 'unexpected error') . ' (filler_active_connections).'
