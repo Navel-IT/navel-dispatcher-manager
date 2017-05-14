@@ -22,7 +22,7 @@ sub show_associated_filler_connection_status {
 
     my $definition = $controller->daemon->{core}->{definitions}->definition_by_name($name);
 
-    return $controller->navel->stdresponses->resource_not_found($name) unless defined $definition;
+    return $controller->navel->api->responses->resource_not_found($name) unless defined $definition;
 
     $controller->render_later;
 
